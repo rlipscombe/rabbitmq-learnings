@@ -88,6 +88,10 @@ allowed to connect to the queue at a time.
 
 ## `simple_consumer_exchange`
 
+TODO: This actually demonstrates a "topic" exchange. When I try it
+with a "direct" exchange, it doesn't work!
+TODO: Because we bound with '#', we actually have to send with '#'.
+
 This sample demonstrates associating a queue with a "direct" exchange.
 
 If you run it as `simple_consumer_exchange the-queue the-exchange` and
@@ -98,6 +102,28 @@ You'll also see that the queue "the-queue" is bound to two exchanges:
 - the default exchange, using the routing filter "the-queue"
 - the new exchange, using the routing filter "#".
 
+### Caveat
+
+Unlike some node modules, the *amqp* module doesn't correctly handle a
+missing options object when calling `connection.exchange`:
+
+    connection.exchange(EXCHANGE_NAME);
+
+...works, but you didn't pass a callback, so there's a race condition.
+
+This:
+
+    connection.exchange(EXCHANGE_NAME, function(exchange) { /* ... */ });
+
+...doesn't work, because there's no default applied for the options object.
+You need to do this instead:
+
+    connection.exchange(EXCHANGE_NAME, {}, function(exchange) { /* ... */ });
+
+### Exchange type
+
+If you don't specify an exchange type, *node-amqp* defaults to "topic".
+
 ### It's still bound to the default exchange
 
 You can see that our new consumer still receives messages from the default
@@ -106,3 +132,13 @@ exchange by using the old producer to publish a message:
     simple_producer the-queue some-message
 
 This message is still seen by the new consumer.
+
+### Sending to the given exchange with any routing key.
+
+If you take a look at the `simple_producer_exchange` sample, you'll see that
+it publishes to an exchange.
+
+Note that if you run it with _any_ routing key, the message will be delivered
+to the consumer, because it is subscribed to '#' on that exchange.
+
+TODO: Durable exchange -- close consumer, it's still there, but restart rabbit; it's gone.
