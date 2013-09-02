@@ -86,3 +86,23 @@ This sample demonstrates the `exclusive: true` option. It calls:
 If you attempt to run it twice, you'll notice that only one consumer is
 allowed to connect to the queue at a time.
 
+## `simple_consumer_exchange`
+
+This sample demonstrates associating a queue with a "direct" exchange.
+
+If you run it as `simple_consumer_exchange the-queue the-exchange` and
+then look in the visualiser, you'll see that there's a new exchange named
+"the-exchange".
+
+You'll also see that the queue "the-queue" is bound to two exchanges:
+- the default exchange, using the routing filter "the-queue"
+- the new exchange, using the routing filter "#".
+
+### It's still bound to the default exchange
+
+You can see that our new consumer still receives messages from the default
+exchange by using the old producer to publish a message:
+
+    simple_producer the-queue some-message
+
+This message is still seen by the new consumer.
