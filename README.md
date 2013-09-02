@@ -51,7 +51,7 @@ This means that it will be deleted when the last consumer exits.
 You can see this by pressing Ctrl+C to kill `simple_consumer`. Note that
 the queue is removed from the visualiser.
 
-### Multiple consumers
+### Multiple consumers, single queue
 
 If you run `simple_consumer my-queue` twice, you can see in the RabbitMQ
 visualiser that there's still a single "my-queue" queue, but that it has
@@ -66,4 +66,14 @@ receive the message.
 
 This shows RabbitMQ using a round-robin mechanism to distribute messages to
 the queue consumers.
+
+### Multiple consumers, multiple queues
+
+If you run `simple_consumer queue1` and `simple_consumer queue2`, then
+you'll end up with both queues attached to the default exchange, each with
+one listener.
+
+If you run `simple_producer queue1`, then the message will be delivered
+to only one listener. To send to the other listener, specify the other
+queue name.
 
