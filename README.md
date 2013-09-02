@@ -77,3 +77,12 @@ If you run `simple_producer queue1`, then the message will be delivered
 to only one listener. To send to the other listener, specify the other
 queue name.
 
+## `simple_consumer_exclusive`
+
+This sample demonstrates the `exclusive: true` option. It calls:
+
+    connection.queue(QUEUE_NAME, { exclusive: true }, /* ... */ );
+
+If you attempt to run it twice, you'll notice that only one consumer is
+allowed to connect to the queue at a time.
+
