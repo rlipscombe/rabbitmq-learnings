@@ -15,6 +15,18 @@ at http://localhost:15672/visualiser/
 
 You can mouse-over things and see how everything's connected.
 
+## A note: Command lines
+
+Where I've put:
+
+> run `foo bar`
+
+...what I actually mean is:
+
+> run `node foo.js bar`
+
+You'll figure it out.
+
 ## `simple_producer` and `simple_consumer`
 
 `simple_consumer` declares a queue, and subscribes to it. Because the
