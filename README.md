@@ -1,7 +1,7 @@
 rabbitmq-learnings
 ==================
 
-Somewhere to keep my RabbitMQ learnings
+Somewhere to keep my RabbitMQ learnings.
 
 ## RabbitMQ has a cool visualiser included
 
@@ -86,21 +86,14 @@ This sample demonstrates the `exclusive: true` option. It calls:
 If you attempt to run it twice, you'll notice that only one consumer is
 allowed to connect to the queue at a time.
 
-## `simple_consumer_exchange`
+### Exchange type: direct
 
-TODO: This actually demonstrates a "topic" exchange. When I try it
-with a "direct" exchange, it doesn't work!
-TODO: Because we bound with '#', we actually have to send with '#'.
+If you don't specify an exchange type, *node-amqp* defaults to "topic".
+For the next bit, we'll stick with "direct", which is what we've been using
+with the default exchange:
 
-This sample demonstrates associating a queue with a "direct" exchange.
-
-If you run it as `simple_consumer_exchange the-queue the-exchange` and
-then look in the visualiser, you'll see that there's a new exchange named
-"the-exchange".
-
-You'll also see that the queue "the-queue" is bound to two exchanges:
-- the default exchange, using the routing filter "the-queue"
-- the new exchange, using the routing filter "#".
+    var exchangeIsOpen = function(exchange) { /* ... */ };
+    connection.exchange(EXCHANGE_NAME, { type: 'direct' }, exchangeIsOpen);
 
 ### Caveat
 
@@ -120,9 +113,20 @@ You need to do this instead:
 
     connection.exchange(EXCHANGE_NAME, {}, function(exchange) { /* ... */ });
 
-### Exchange type
+## `simple_consumer_exchange`
 
-If you don't specify an exchange type, *node-amqp* defaults to "topic".
+This sample demonstrates associating a queue with a "direct" exchange.
+
+If you run it as:
+
+    simple_consumer_exchange the-queue the-exchange
+
+and then look in the visualiser, you'll see that there's a new exchange named
+"the-exchange".
+
+You'll also see that the queue "the-queue" is bound to two exchanges:
+- the default exchange, using the routing filter "the-queue"
+- the new exchange, using the routing filter "#".
 
 ### It's still bound to the default exchange
 
@@ -133,12 +137,70 @@ exchange by using the old producer to publish a message:
 
 This message is still seen by the new consumer.
 
-### Sending to the given exchange with any routing key.
+### Sending to the given exchange
 
-If you take a look at the `simple_producer_exchange` sample, you'll see that
-it publishes to an exchange.
+Because we bound the queue to the exchange with the wildcard routing
+filter '#', you might expect that any message to the given exchange
+will be delivered to the queue.
 
-Note that if you run it with _any_ routing key, the message will be delivered
-to the consumer, because it is subscribed to '#' on that exchange.
+Wrong. We chose a "direct"-type exchange earlier, which means that the
+routing filter must match the routing key.
 
-TODO: Durable exchange -- close consumer, it's still there, but restart rabbit; it's gone.
+This means that you have to send messages with routing key '#' for them
+to be delivered to that queue.
+
+Try it:
+
+    simple_producer_exchange the-queue the-exchange 'Hello'
+
+Nothing happens, because the queue isn't bound to the exchange using
+that routing filter. You need to use the following:
+
+    simple_producer_exchange '#' the-exchange 'Hello'
+
+This works.
+
+### Exchange lifetime: autoDelete
+
+Make sure that you've got no consumers or producers running. If you
+look in the visualiser, you'll see that the exchange is still there.
+
+This is because the default options include `autoDelete: false`. This
+means that the exchange will **not** be deleted when there are no longer
+queues bound to it.
+
+Try the `simple_consumer_exchange_autodelete` example. When it's running,
+the exchange exists. When you stop it (press Ctrl+C), the exchange is
+deleted.
+
+You can see the exchange options in the visualiser: if you mouse-over the
+exchange, the options are displayed at the top of the visualiser tab.
+
+### Exchange lifetime: durable
+
+Also note that the exchange is declared as `durable: false`. This means
+that it will not be recreated when the server is restarted.
+
+Try that:
+
+    sudo /etc/init.d/rabbitmq-server restart
+
+Refresh the visualiser. Note that the exchanges you created earlier are
+no longer there.
+
+### TODO: Direct exchange, different routing keys.
+
+TODO: Demonstrate that this is no different from the default exchange.
+We can have multiple queues attached to the exchange, and since they're direct,
+we'll either get round-robin (same routing filter) or point-to-point (different
+routing filter).
+
+TODO: Can I connect the same queue to two different exchanges? Why might I want to?
+
+### TODO: Topic exchange, wildcard routing key, single consumer.
+### TODO: Topic exchange, wildcard routing key, multiple consumers.
+### TODO: Topic exchange, multiple routing keys, multiple consumers.
+### TODO: Topic exchange, bind same queue with multiple routing keys.
+### TODO: Fanout exchange
+
+
