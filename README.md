@@ -271,18 +271,57 @@ and he'll start to start to receive some of "your" messages.**
 
 You might consider opening the queue in exclusive mode.
 
-### TODO: Multiple direct exchanges, multiple consumers, same queue, same key
+### Multiple direct exchanges, multiple consumers, same queue, same key
 
-TODO: Can I connect the same queue to two different exchanges? Why might I want to?
+    simple_consumer_exchange_routing queue-a exchange-x key-1
+    simple_consumer_exchange_routing queue-a exchange-y key-1
 
-### TODO: Multiple direct exchanges, multiple consumers, same queue, different keys
+If you look in the visualiser, you'll see that there are two processes listening
+to a single queue, and that this queue is bound to the two exchanges, using the
+same key.
 
-### It's (not) the same as the default exchange
+This means that, whichever exchange a message is published to, if the key matches,
+it'll be delivered to the specified queue, and the two consumers will pick up the
+messages in a round-robin fashion.
 
-Apart from the separate queues, same keys case, this is almost the same as the default exchange.
-No it's not.
+### Multiple direct exchanges, multiple consumers, same queue, different keys
 
-TODO: Describe why
+    simple_consumer_exchange_routing queue-a exchange-x key-1
+    simple_consumer_exchange_routing queue-a exchange-y key-2
+
+If you look in the visualiser, you'll see that there are two processes listening
+to the same queue, and that the queue is bound to the two exchanges, using different
+keys.
+
+This means that, if you publish 'key-2' to 'exchange-x', it won't be delivered,
+because that exchange doesn't want to use that queue.
+
+If you publish 'key-1' to 'exchange-x' (or 'key-2' to 'exchange-y'), it'll be
+delivered, round-robin, to both, even though they've subscribed with different keys,
+because they're listening to the same queue.
+
+### Multiple direct exchanges, multiple consumers, different queues, same key
+
+    simple_consumer_exchange_routing queue-a exchange-x key-1
+    simple_consumer_exchange_routing queue-b exchange-y key-1
+
+Because these are different queues, bound to different exchanges (albeit with
+the same key), you have to publish 'key-1' to 'exchange-x' to reach the first
+consumer, and 'key-1' to 'exchange-y' to reach the second consumer.
+
+There's no overlap.
+
+### Multiple direct exchanges, multiple consumers, different queues, different key
+
+    simple_consumer_exchange_routing queue-a exchange-x key-1
+    simple_consumer_exchange_routing queue-b exchange-y key-2
+
+This one's easy -- it's the same as the above. Because they're listening on different
+queues, and those queues are bound to different exchanges, there's no overlap.
+
+
+
+
 TODO: Can we use a defined routing key with the default exchange? It doesn't appear so.
 
 ### TODO: Topic exchange, wildcard routing key, single consumer.
