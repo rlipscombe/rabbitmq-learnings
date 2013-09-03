@@ -188,8 +188,50 @@ Try that:
 Refresh the visualiser. Note that the exchanges you created earlier are
 no longer there.
 
-### TODO: Direct exchange, different routing keys.
+### Direct exchange, different routing keys
 
+What happens if you use a "direct" exchange, with different routing filters?
+
+That is:
+
+    simple_consumer_exchange_routing queue-a the-exchange key-1
+    simple_consumer_exchange_routing queue-b the-exchange key-2
+
+If you look in the visualiser, you'll see:
+- (as usual) the queues are both connected to the default exchange, with the
+  queue name as the routing key.
+- the queues are both connected to the "the-exchange" exchange, with different
+  routing keys.
+
+You can then send a message to a specific recipient by:
+
+    simple_producer_exchange key-1 the-exchange 'Hello'
+
+If you play around with it some more, you'll see that it's basically just the
+same as the default exchange (which is also "direct"), but with different routing
+keys.
+
+### Direct exchange, multiple consumers, same routing keys
+
+TODO: For example:
+
+    simple_consumer_exchange_routing queue-a the-exchange key-1
+    simple_consumer_exchange_routing queue-b the-exchange key-1
+
+TODO: What about:
+
+    simple_consumer_exchange_routing queue-a the-exchange key-1
+    simple_consumer_exchange_routing queue-a the-exchange key-1
+
+TODO: Or:
+
+    simple_consumer_exchange_routing queue-a the-exchange key-1
+    simple_consumer_exchange_routing queue-a the-exchange key-2
+      
+
+### It's the same as the default exchange
+
+TODO: Describe why
 TODO: Demonstrate that this is no different from the default exchange.
 We can have multiple queues attached to the exchange, and since they're direct,
 we'll either get round-robin (same routing filter) or point-to-point (different
