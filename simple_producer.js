@@ -16,4 +16,7 @@ connection.on('ready', function() {
   console.log('Connected to AMQP server.');
 
   connection.publish(ROUTING_KEY, MESSAGE);
+
+  // XXX: Give it time to actually publish the message.
+  setTimeout(function() { process.exit(); }, 100);
 });

@@ -24,5 +24,8 @@ connection.on('ready', function() {
     console.log('Exchange is open.');
     console.log('Publishing message.');
     exchange.publish(ROUTING_KEY, MESSAGE);
+
+    // XXX: Give it time to actually publish the message.
+    setTimeout(function() { process.exit(); }, 200);
   });
 });
