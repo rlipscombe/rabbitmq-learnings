@@ -113,13 +113,13 @@ You need to do this instead:
 
     connection.exchange(EXCHANGE_NAME, {}, function(exchange) { /* ... */ });
 
-## `simple_consumer_exchange`
+## `simple_consumer_direct_exchange`
 
 This sample demonstrates associating a queue with a "direct" exchange.
 
 If you run it as:
 
-    simple_consumer_exchange the-queue the-exchange
+    simple_consumer_direct_exchange the-queue the-exchange
 
 and then look in the visualiser, you'll see that there's a new exchange named
 "the-exchange".
@@ -151,12 +151,12 @@ to be delivered to that queue.
 
 Try it:
 
-    simple_producer_exchange the-queue the-exchange 'Hello'
+    simple_producer_direct_exchange the-queue the-exchange 'Hello'
 
 Nothing happens, because the queue isn't bound to the exchange using
 that routing filter. You need to use the following:
 
-    simple_producer_exchange '#' the-exchange 'Hello'
+    simple_producer_direct_exchange '#' the-exchange 'Hello'
 
 This works.
 
@@ -169,7 +169,7 @@ This is because the default options include `autoDelete: false`. This
 means that the exchange will **not** be deleted when there are no longer
 queues bound to it.
 
-Try the `simple_consumer_exchange_autodelete` example. When it's running,
+Try the `simple_consumer_direct_exchange_autodelete` example. When it's running,
 the exchange exists. When you stop it (press Ctrl+C), the exchange is
 deleted.
 
@@ -194,8 +194,8 @@ What happens if you use a "direct" exchange, with different routing filters?
 
 That is:
 
-    simple_consumer_exchange_routing queue-a the-exchange key-1
-    simple_consumer_exchange_routing queue-b the-exchange key-2
+    simple_consumer_direct_exchange_routing queue-a the-exchange key-1
+    simple_consumer_direct_exchange_routing queue-b the-exchange key-2
 
 If you look in the visualiser, you'll see:
 - (as usual) the queues are both connected to the default exchange, with the
@@ -205,7 +205,7 @@ If you look in the visualiser, you'll see:
 
 You can then send a message to a specific recipient by:
 
-    simple_producer_exchange key-1 the-exchange 'Hello'
+    simple_producer_direct_exchange key-1 the-exchange 'Hello'
 
 If you play around with it some more, you'll see that it's basically just the
 same as the default exchange (which is also "direct"), but with different routing
@@ -215,8 +215,8 @@ keys.
 
 For example:
 
-    simple_consumer_exchange_routing queue-a the-exchange key-1
-    simple_consumer_exchange_routing queue-b the-exchange key-1
+    simple_consumer_direct_exchange_routing queue-a the-exchange key-1
+    simple_consumer_direct_exchange_routing queue-b the-exchange key-1
 
 This one's interesting. Because we've subscribed different queues to the
 same key, we end up with the message being delivered to both queues, and
@@ -228,15 +228,15 @@ TODO: How is this different from fanout exchanges?
 
 For example:
 
-    simple_consumer_exchange_routing queue-a the-exchange key-1
-    simple_consumer_exchange_routing queue-a the-exchange key-1
+    simple_consumer_direct_exchange_routing queue-a the-exchange key-1
+    simple_consumer_direct_exchange_routing queue-a the-exchange key-1
 
 In this example, we have two consumers connected to the same queue,
 bound to the same exchange, with the same routing key.
 
 If you publish messages to this:
 
-    simple_producer_exchange key-1 the-exchange 'Hello'
+    simple_producer_direct_exchange key-1 the-exchange 'Hello'
 
 ...then the messages are delivered in a round-robin fashion.
 
@@ -244,8 +244,8 @@ If you publish messages to this:
 
 For example:
 
-    simple_consumer_exchange_routing queue-a the-exchange key-1
-    simple_consumer_exchange_routing queue-a the-exchange key-2
+    simple_consumer_direct_exchange_routing queue-a the-exchange key-1
+    simple_consumer_direct_exchange_routing queue-a the-exchange key-2
 
 If you look in the visualiser, you'll see that the two consumers
 are listening to the same queue, and the queue is bound to **both**
@@ -254,11 +254,11 @@ routing keys.
 This means that if you publish a message to the exchange with either
 key:
 
-    simple_producer_exchange key-1 the-exchange 'Hello'
+    simple_producer_direct_exchange key-1 the-exchange 'Hello'
 
 ...or:
 
-    simple_producer_exchange key-2 the-exchange 'Hello'
+    simple_producer_direct_exchange key-2 the-exchange 'Hello'
 
 ...then both consumers will see those messages, delivered in a round-robin
 fashion.
@@ -273,8 +273,8 @@ You might consider opening the queue in exclusive mode.
 
 ### Multiple direct exchanges, multiple consumers, same queue, same key
 
-    simple_consumer_exchange_routing queue-a exchange-x key-1
-    simple_consumer_exchange_routing queue-a exchange-y key-1
+    simple_consumer_direct_exchange_routing queue-a exchange-x key-1
+    simple_consumer_direct_exchange_routing queue-a exchange-y key-1
 
 If you look in the visualiser, you'll see that there are two processes listening
 to a single queue, and that this queue is bound to the two exchanges, using the
@@ -286,8 +286,8 @@ messages in a round-robin fashion.
 
 ### Multiple direct exchanges, multiple consumers, same queue, different keys
 
-    simple_consumer_exchange_routing queue-a exchange-x key-1
-    simple_consumer_exchange_routing queue-a exchange-y key-2
+    simple_consumer_direct_exchange_routing queue-a exchange-x key-1
+    simple_consumer_direct_exchange_routing queue-a exchange-y key-2
 
 If you look in the visualiser, you'll see that there are two processes listening
 to the same queue, and that the queue is bound to the two exchanges, using different
@@ -302,8 +302,8 @@ because they're listening to the same queue.
 
 ### Multiple direct exchanges, multiple consumers, different queues, same key
 
-    simple_consumer_exchange_routing queue-a exchange-x key-1
-    simple_consumer_exchange_routing queue-b exchange-y key-1
+    simple_consumer_direct_exchange_routing queue-a exchange-x key-1
+    simple_consumer_direct_exchange_routing queue-b exchange-y key-1
 
 Because these are different queues, bound to different exchanges (albeit with
 the same key), you have to publish 'key-1' to 'exchange-x' to reach the first
@@ -313,8 +313,8 @@ There's no overlap.
 
 ### Multiple direct exchanges, multiple consumers, different queues, different key
 
-    simple_consumer_exchange_routing queue-a exchange-x key-1
-    simple_consumer_exchange_routing queue-b exchange-y key-2
+    simple_consumer_direct_exchange_routing queue-a exchange-x key-1
+    simple_consumer_direct_exchange_routing queue-b exchange-y key-2
 
 This one's easy -- it's the same as the above. Because they're listening on different
 queues, and those queues are bound to different exchanges, there's no overlap.
