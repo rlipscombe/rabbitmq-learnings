@@ -12,7 +12,7 @@ connection.on('ready', function() {
 
   var queue_options = { exclusive: true };
   connection.queue(QUEUE_NAME, queue_options, function(q) {
-    console.log('Connected to queue.');
+    console.log('Connected to queue "' + QUEUE_NAME + '".');
 
     q.bind('#');
 

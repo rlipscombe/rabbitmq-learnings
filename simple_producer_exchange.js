@@ -21,8 +21,8 @@ connection.on('ready', function() {
   console.log('Connected to AMQP server.');
 
   connection.exchange(EXCHANGE_NAME, { type: 'direct' }, function(exchange) {
-    console.log('Exchange is open.');
-    console.log('Publishing message.');
+    console.log('Exchange "' + EXCHANGE_NAME + '" is open.');
+    console.log('Publishing message "' + MESSAGE + '" with routing key "' + ROUTING_KEY + '".');
     exchange.publish(ROUTING_KEY, MESSAGE);
 
     // XXX: Give it time to actually publish the message.

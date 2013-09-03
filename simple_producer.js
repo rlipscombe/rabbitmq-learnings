@@ -15,6 +15,7 @@ connection.on('error', function(err) { console.error(err); });
 connection.on('ready', function() {
   console.log('Connected to AMQP server.');
 
+  console.log('Publishing "' + MESSAGE + '" with routing key "' + ROUTING_KEY + '".');
   connection.publish(ROUTING_KEY, MESSAGE);
 
   // XXX: Give it time to actually publish the message.

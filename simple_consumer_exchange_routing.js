@@ -21,12 +21,13 @@ connection.on('ready', function() {
   console.log('Connected to AMQP server.');
 
   connection.exchange(EXCHANGE_NAME, { type: 'direct' }, function(exchange) {
-    console.log('Exchange is open.');
+    console.log('Exchange "' + EXCHANGE_NAME + '" is open.');
 
     connection.queue(QUEUE_NAME, function(q) {
-      console.log('Connected to queue.');
+      console.log('Connected to queue "' + QUEUE_NAME + '".');
   
       q.bind(EXCHANGE_NAME, ROUTING_KEY);
+      console.log('Subscribed with routing key "' + ROUTING_KEY + '".');
   
       q.subscribe(function(message) {
         console.log(message);

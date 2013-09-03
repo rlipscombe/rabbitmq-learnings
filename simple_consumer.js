@@ -11,7 +11,7 @@ connection.on('ready', function() {
   console.log('Connected to AMQP server.');
 
   connection.queue(QUEUE_NAME, function(q) {
-    console.log('Connected to queue.');
+    console.log('Connected to queue "' + QUEUE_NAME + '".');
 
     q.bind('#');
 
