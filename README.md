@@ -211,38 +211,83 @@ If you play around with it some more, you'll see that it's basically just the
 same as the default exchange (which is also "direct"), but with different routing
 keys.
 
-### Direct exchange, multiple consumers, same routing keys
+### Direct exchange, multiple consumers, separate queues, same routing keys
 
-TODO: For example:
+For example:
 
     simple_consumer_exchange_routing queue-a the-exchange key-1
     simple_consumer_exchange_routing queue-b the-exchange key-1
 
-TODO: What about:
+This one's interesting. Because we've subscribed different queues to the
+same key, we end up with the message being delivered to both queues, and
+to both consumers.
+
+TODO: How is this different from fanout exchanges?
+
+### Direct exchange, multiple consumers, same queue, same key
+
+For example:
 
     simple_consumer_exchange_routing queue-a the-exchange key-1
     simple_consumer_exchange_routing queue-a the-exchange key-1
 
-TODO: Or:
+In this example, we have two consumers connected to the same queue,
+bound to the same exchange, with the same routing key.
+
+If you publish messages to this:
+
+    simple_producer_exchange key-1 the-exchange 'Hello'
+
+...then the messages are delivered in a round-robin fashion.
+
+### Direct exchange, multiple consumers, same queue, different key
+
+For example:
 
     simple_consumer_exchange_routing queue-a the-exchange key-1
     simple_consumer_exchange_routing queue-a the-exchange key-2
-      
 
-### It's the same as the default exchange
+If you look in the visualiser, you'll see that the two consumers
+are listening to the same queue, and the queue is bound to **both**
+routing keys.
 
-TODO: Describe why
-TODO: Demonstrate that this is no different from the default exchange.
-We can have multiple queues attached to the exchange, and since they're direct,
-we'll either get round-robin (same routing filter) or point-to-point (different
-routing filter).
+This means that if you publish a message to the exchange with either
+key:
+
+    simple_producer_exchange key-1 the-exchange 'Hello'
+
+...or:
+
+    simple_producer_exchange key-2 the-exchange 'Hello'
+
+...then both consumers will see those messages, delivered in a round-robin
+fashion.
+
+This might be surprising:
+
+**If another consumer listens on "your" queue and binds it to the exchange
+with a different routing key, then you start to receive some of "his" messages,
+and he'll start to start to receive some of "your" messages.**
+
+You might consider opening the queue in exclusive mode.
+
+### TODO: Multiple direct exchanges, multiple consumers, same queue, same key
 
 TODO: Can I connect the same queue to two different exchanges? Why might I want to?
+
+### TODO: Multiple direct exchanges, multiple consumers, same queue, different keys
+
+### It's (not) the same as the default exchange
+
+Apart from the separate queues, same keys case, this is almost the same as the default exchange.
+No it's not.
+
+TODO: Describe why
+TODO: Can we use a defined routing key with the default exchange? It doesn't appear so.
 
 ### TODO: Topic exchange, wildcard routing key, single consumer.
 ### TODO: Topic exchange, wildcard routing key, multiple consumers.
 ### TODO: Topic exchange, multiple routing keys, multiple consumers.
 ### TODO: Topic exchange, bind same queue with multiple routing keys.
 ### TODO: Fanout exchange
-
 
