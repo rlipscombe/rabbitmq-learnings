@@ -86,7 +86,7 @@ This sample demonstrates the `exclusive: true` option. It calls:
 If you attempt to run it twice, you'll notice that only one consumer is
 allowed to connect to the queue at a time.
 
-### Exchange type: direct
+## Exchange type: direct
 
 If you don't specify an exchange type, *node-amqp* defaults to "topic".
 For the next bit, we'll stick with "direct", which is what we've been using
@@ -113,7 +113,7 @@ You need to do this instead:
 
     connection.exchange(EXCHANGE_NAME, {}, function(exchange) { /* ... */ });
 
-## `consumer_direct_exchange`
+### `consumer_direct_exchange`
 
 This sample demonstrates associating a queue with a "direct" exchange.
 
@@ -128,6 +128,9 @@ You'll also see that the queue "the-queue" is bound to two exchanges:
 - the default exchange, using the routing filter "the-queue"
 - the new exchange, using the routing filter "#".
 
+TODO: Is this stuff about '#' confusing at this point? Maybe mention it
+as an aside?
+
 ### It's still bound to the default exchange
 
 You can see that our new consumer still receives messages from the default
@@ -140,8 +143,8 @@ This message is still seen by the new consumer.
 ### Sending to the given exchange
 
 Because we bound the queue to the exchange with the wildcard routing
-filter '#', you might expect that any message to the given exchange
-will be delivered to the queue.
+filter '#', you might expect (if you've been reading about topic exchanges)
+that any message to the given exchange will be delivered to the queue.
 
 Wrong. We chose a "direct"-type exchange earlier, which means that the
 routing filter must match the routing key.
@@ -319,14 +322,98 @@ There's no overlap.
 This one's easy -- it's the same as the above. Because they're listening on different
 queues, and those queues are bound to different exchanges, there's no overlap.
 
-
-
-
 TODO: Can we use a defined routing key with the default exchange? It doesn't appear so.
 
-### TODO: Topic exchange, wildcard routing key, single consumer.
-### TODO: Topic exchange, wildcard routing key, multiple consumers.
-### TODO: Topic exchange, multiple routing keys, multiple consumers.
-### TODO: Topic exchange, bind same queue with multiple routing keys.
+## Topic Exchanges
+
+RabbitMQ also supports topic exchanges. To set one of these up, you declare
+the exchange with `{ type: 'topic' }`. Then, when you bind the queue to the
+exchange, you can specify a routing key with (optionally) wildcards:
+
+    consumer_topic_exchange queue-a topic-exchange '#'
+
+If you look in the visualiser, you'll see a single process listening on 'queue-a',
+which is bound, using routing key '#', to the exchange named 'topic-exchange'.
+
+It's also (as usual) bound to the default exchange.
+
+We can publish messages to that exchange:
+
+    producer_topic_exchange 'foo' topic-exchange 'Hello'
+
+This message is picked up by the listener. 
+
+### Topic filters
+
+Topics are expected to be "written.like.this", where each dot separates a subtopic.
+
+In the example above, '#' is a wildcard. It stands for zero or more topics.
+- A single '#' matches any topic.
+- 'foo.#' matches 'foo', 'foo.bar' and 'foo.bar.baz'.
+- 'foo.#.baz' matches 'foo.baz', 'foo.x.baz' and 'foo.x.y.baz',
+  but (in particular) not 'foo' or 'baz'.
+
+There's also '\*', which matches exactly one topic.
+- A single '\*' matches any single-part topic. So it matches 'foo' or 'bar' or 'baz', but not 'foo.bar' or 'foo.baz'.
+- 'foo.\*' matches 'foo.bar' and 'foo.baz', but not 'foo' or 'foo.bar.baz'.
+- 'foo.\*.baz' matches 'foo.bar.baz' and 'foo.quux.baz', but not 'foo.baz'.
+
+A note about single dots:
+- 'foo.' is a two-part topic, where the second part is empty. This means that '#' will match it, but '\*' won't.
+- Similarly, 'foo..baz' is a three part topic.
+
+TODO: Some worked examples.
+
+### Some examples with multiple consumers
+
+If you bind two consumers to the same queue with the same topic,
+it'll deliver matching messages to the queue, where they'll be delivered round-robin.
+
+    consumer_topic_exchange queue-a 'foo.#' topic-exchange
+    consumer_topic_exchange queue-a 'foo.#' topic-exchange
+
+If two consumers bind two separate queues with the same topic, you'll get a copy to each:
+
+    cte A 'foo.#' topic-exchange
+    cte B 'foo.#' topic-exchange
+
+If two consumers bind different queues with overlapping topics, one will get a subset:
+
+    cte A 'foo.#' topic-exchange
+    cte B 'foo.bar.#' topic-exchange
+
+Similarly, if two consumers bind the same queue with different topics,
+then you'll get (round-robin) crosstalk:
+
+    cte A 'foo.#' topic-exchange
+    cte A 'bar.#' topic-exchange
+
+Two consumers, same queue, overlapping topics => crosstalk
+
+    cte A 'foo.#' topic-exchange
+    cte A 'foo.bar.#' topic-exchange
+
+### A note about not killing consumers (Caveat)
+
+If you have a non-exclusive, non-autoDelete queue, and you leave a consumer
+connected, with (e.g.) routing key 'foo.#', and then you start another consumer,
+with (e.g.) routing key 'bar.#', and then you kill the first consumer:
+
+The queue will still be bound to the exchange using both routing keys, which means
+that the second consumer will see 'foo.whatever' messages.
+
 ### TODO: Fanout exchange
 
+Let's assume we wanted to broadcast a message to many consumers.
+
+We could use:
+- a single direct exchange.
+- multiple queues with the same routing keys.
+- multiple consumers, one per queue.
+
+...or, we could use:
+- a single topic exchange.
+- multiple queues with the same (or overlapping) routing keys.
+- multiple consumers, one per queue.
+
+Or there's fanout exchanges. What are they for?
