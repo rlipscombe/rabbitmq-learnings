@@ -402,7 +402,7 @@ with (e.g.) routing key 'bar.#', and then you kill the first consumer:
 The queue will still be bound to the exchange using both routing keys, which means
 that the second consumer will see 'foo.whatever' messages.
 
-### TODO: Fanout exchange
+### Broadcast using a "direct" exchange
 
 Let's assume we wanted to broadcast a message to many consumers.
 
@@ -416,4 +416,30 @@ We could use:
 - multiple queues with the same (or overlapping) routing keys.
 - multiple consumers, one per queue.
 
-Or there's fanout exchanges. What are they for?
+## Fanout exchange
+
+Let's create a fanout exchange. To do this, declare the exchange with `{ type: 'fanout' }`.
+
+Then:
+
+    consumer_fanout_exchange queue-a fanout-exchange
+
+Looking in the visualiser, we see a single process, listening on a single queue.
+
+And, then:
+
+    producer_fanout_exchange any-routing-key fanout-exchange 'Hello'
+
+It turns out that, the routing key **doesn't matter**. Fanout exchanges ignore the routing key.
+
+### Multiple consumers, single queue
+
+OK. So do we get the usual round-robin effects?
+
+Yes, we do.
+
+So... What **is** the correct way to get broadcasts in RabbitMQ?
+
+Question: does using a fanout exchange with 1 queue per consumer use as much RAM as a direct exchange?
+
+
