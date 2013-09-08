@@ -37,15 +37,15 @@ function connection_error(err) {
 
 function connection_ready(connection, g) {
   return function() {
-  console.log('Connected to AMQP server.');
+    console.log('Connected to AMQP server.');
 
-  connection.exchange(EXCHANGE_NAME, { type: 'direct' }, function(exchange) {
-    console.log('Exchange "' + EXCHANGE_NAME + '" is open.');
+    connection.exchange(EXCHANGE_NAME, { type: 'direct' }, function(exchange) {
+      console.log('Exchange "' + EXCHANGE_NAME + '" is open.');
     
-    for (var i = 0; i < CONSUMERS_PER_GROUP; ++i) {
-      start_consumer(connection, g, i);
-    }
-  });
+      for (var i = 0; i < CONSUMERS_PER_GROUP; ++i) {
+        start_consumer(connection, g, i);
+      }
+    });
   };
 }
 
